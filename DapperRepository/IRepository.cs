@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DapperRepository.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -88,17 +89,97 @@ namespace DapperRepository
         Task<int> InsertAsync(IEnumerable<T> list);
 
         /// <summary>
-        /// Updates entity in table "Ts",
+        /// Updates entity in table "Ts"
         /// </summary>
         /// <param name="entity">Entity to be updated</param>
         /// <returns>true if updated, false if not found or not modified (tracked entities)</returns>
         bool Update(T entity);
+
+        /// <summary>
+        /// Updates entity in table "Ts" asynchronously
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         Task<bool> UpdateAsync(T entity);
+
+        /// <summary>
+        /// Updates a list of entities in table "Ts".
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
         bool Update(IEnumerable<T> list);
+
+        /// <summary>
+        /// Updates a list of entities in table "Ts" asynchronously
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
         Task<bool> UpdateAsync(IEnumerable<T> list);
+
+        /// <summary>
+        /// Executes a query, returning the data typed as T.
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
         IEnumerable<T> Query(string sql, object param = null);
+
+        /// <summary>
+        ///  Execute a query, returning the data typed as T. asynchronously 
+        /// </summary>
+        /// <param name="sql"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
         Task<IEnumerable<T>> QueryAsync(string sql, object param = null);
+
+        /// <summary>
+        /// Executes a query, given a filter T, a direct column-name===member-name mapping is assumed (case insensitive)
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         IEnumerable<T> QueryDynamic<TFilter>(TFilter filter) where TFilter : class;
+
+        /// <summary>
+        /// Executes a query, given a filter T, a direct column-name===member-name mapping is assumed (case insensitive), asynchronously
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        /// <param name="filter"></param>
+        /// <returns></returns>
         Task<IEnumerable<T>> QueryDynamicAsync<TFilter>(TFilter filter) where TFilter : class;
+
+        /// <summary>
+        /// Executes an offset query, given a filter T and pagination parameters, a direct column-name===member-name mapping is assumed (case insensitive)
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        /// <param name="filter"></param>
+        /// <param name="paginationParams"></param>
+        /// <returns></returns>
+        (PaginationInfo pagination, IEnumerable<T> elements) QueryDynamicPaged<TFilter>(TFilter filter, PaginationParams paginationParams) where TFilter : class;
+
+        /// <summary>
+        /// Executes an offset query, given a filter T and pagination parameters, a direct column-name===member-name mapping is assumed (case insensitive), asynchronously
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        /// <param name="filter"></param>
+        /// <param name="paginationParams"></param>
+        /// <returns></returns>
+        Task<(PaginationInfo pagination, IEnumerable<T> elements)> QueryDynamicPagedAsync<TFilter>(TFilter filter, PaginationParams paginationParams) where TFilter : class;
+
+        /// <summary>
+        /// Executes a count query, given a filter T
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        int QueryDynamicCount<TFilter>(TFilter filter) where TFilter : class;
+
+        /// <summary>
+        /// Executes a count query, given a filter T, asynchronously
+        /// </summary>
+        /// <typeparam name="TFilter"></typeparam>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        Task<int> QueryDynamicCountAsync<TFilter>(TFilter filter) where TFilter : class;
     }
 }
