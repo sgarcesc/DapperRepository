@@ -40,5 +40,23 @@ namespace DapperRepository.Extensions
 
             return type.Name + "s";
         }
+
+        /// <summary>
+        /// Gets the sql string for a count query
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="parameterNames"></param>
+        /// <returns></returns>
+        public static string GetSqlStringCount(this Type type, IEnumerable<string> parameterNames)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"select count(*) from {type.GetTableName()} ");
+            builder.AppendLine("where 1 = 1 ");
+            foreach (var name in parameterNames)
+            {
+                builder.AppendLine($"and [{name}] = @{name} ");
+            }
+            return builder.ToString();
+        }
     }
 }

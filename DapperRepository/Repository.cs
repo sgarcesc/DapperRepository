@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
 using DapperRepository.Extensions;
+using DapperRepository.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -21,7 +22,7 @@ namespace DapperRepository
         public Repository(string connectionString)
         {
             if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentNullException(nameof(connectionString));
-            
+
         }
 
         public virtual IEnumerable<T> GetAll()
@@ -87,7 +88,7 @@ namespace DapperRepository
                 return await connection.GetAsync<T>(id);
             }
         }
-        
+
         public virtual long Insert(T entity)
         {
             using (var connection = Connection)
@@ -95,7 +96,7 @@ namespace DapperRepository
                 return connection.Insert(entity);
             }
         }
-        
+
         public virtual long Insert(IEnumerable<T> list)
         {
             using (var connection = Connection)
@@ -110,7 +111,7 @@ namespace DapperRepository
                     transaction.Commit();
                     return list.Count();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     transaction.Rollback();
                     throw e;
@@ -137,7 +138,7 @@ namespace DapperRepository
                     transaction.Commit();
                     return list.Count();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     transaction.Rollback();
                     throw e;
@@ -150,7 +151,7 @@ namespace DapperRepository
             {
                 return connection.Update(entity);
             }
-        }        
+        }
         public virtual bool Update(IEnumerable<T> list)
         {
             using (var connection = Connection)
@@ -165,7 +166,7 @@ namespace DapperRepository
                     transaction.Commit();
                     return list.Any();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     transaction.Rollback();
                     throw e;
@@ -191,7 +192,7 @@ namespace DapperRepository
                     transaction.Commit();
                     return list.Any();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     transaction.Rollback();
                     throw e;
@@ -205,7 +206,7 @@ namespace DapperRepository
                 return connection.Delete(entity);
             }
         }
-        
+
         private bool Delete(IEnumerable<T> list)
         {
             using (var connection = Connection)
@@ -220,12 +221,12 @@ namespace DapperRepository
                     transaction.Commit();
                     return list.Any();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     transaction.Rollback();
                     throw e;
                 }
-                
+
             }
         }
         private async Task<bool> DeleteAsync(T entity)
@@ -247,7 +248,7 @@ namespace DapperRepository
                     transaction.Commit();
                     return list.Any();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     transaction.Rollback();
                     throw e;
@@ -285,6 +286,52 @@ namespace DapperRepository
                 var parameters = filter.GetParameters();
                 var sql = typeof(T).GetSqlString(parameters.ParameterNames);
                 return await connection.QueryAsync<T>(sql: sql.ToString(), param: parameters);
+            }
+        }
+        public virtual (PaginationInfo pagination, IEnumerable<T> elements) QueryDynamicPaged<TFilter>(TFilter filter, PaginationParams paginationParams) where TFilter : class
+        {
+            var totalElements = QueryDynamicCount(filter);
+            using (var connection = Connection)
+            {
+                var pagination = filter.GetPagination(totalElements, paginationParams);
+                var parameters = filter.GetParameters();
+                var sql = typeof(T).GetSqlString(parameters.ParameterNames)
+                                   .AddOrderByToSqlString(paginationParams)
+                                   .AddPagingToSqlString(paginationParams);
+                var elements = connection.Query<T>(sql: sql.ToString(), param: parameters);
+                return (pagination, elements);
+            }
+        }
+        public virtual async Task<(PaginationInfo pagination, IEnumerable<T> elements)> QueryDynamicPagedAsync<TFilter>(TFilter filter, PaginationParams paginationParams) where TFilter : class
+        {
+            var totalElements = await QueryDynamicCountAsync(filter);
+            using (var connection = Connection)
+            {
+                var pagination = filter.GetPagination(totalElements, paginationParams);
+                var parameters = filter.GetParameters();
+                var sql = typeof(T).GetSqlString(parameters.ParameterNames)
+                                   .AddOrderByToSqlString(paginationParams)
+                                   .AddPagingToSqlString(paginationParams);
+                var elements = await connection.QueryAsync<T>(sql: sql.ToString(), param: parameters);
+                return (pagination, elements);
+            }
+        }
+        public virtual int QueryDynamicCount<TFilter>(TFilter filter) where TFilter : class
+        {
+            using (var connection = Connection)
+            {
+                var parameters = filter.GetParameters();
+                var sql = typeof(T).GetSqlStringCount(parameters.ParameterNames);
+                return connection.ExecuteScalar<int>(sql: sql.ToString(), param: parameters);
+            }
+        }
+        public virtual async Task<int> QueryDynamicCountAsync<TFilter>(TFilter filter) where TFilter : class
+        {
+            using (var connection = Connection)
+            {
+                var parameters = filter.GetParameters();
+                var sql = typeof(T).GetSqlStringCount(parameters.ParameterNames);
+                return await connection.ExecuteScalarAsync<int>(sql: sql.ToString(), param: parameters);
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace DapperRepository.Models
 {
-    public class Pagination
+    public struct PaginationInfo
     {
         public int TotalElements { get; set; }
         public int TotalPages { get; set; }
