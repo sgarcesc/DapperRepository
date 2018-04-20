@@ -1,6 +1,9 @@
 ﻿using Dapper;
 using Dapper.Contrib.Extensions;
+using Dapper.FluentMap;
+using Dapper.FluentMap.Dommel;
 using DapperRepository.Extensions;
+using DapperRepository.Mappings;
 using DapperRepository.Models;
 using System;
 using System.Collections.Generic;
@@ -11,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace DapperRepository
 {
-    internal class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : IRepository<T> where T : class
     {
         private readonly string _connectionString;
         protected IDbConnection Connection
@@ -23,6 +26,16 @@ namespace DapperRepository
         {
             if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentNullException(nameof(connectionString));
             _connectionString = connectionString;
+
+
+            FluentMapper.EntityMaps.Clear();
+            FluentMapper.TypeConventions.Clear();
+            FluentMapper.Initialize(config =>
+            {
+                config.AddMap(new TestModelMapping());
+                config.ForDommel();
+            });
+
 
         }
 
